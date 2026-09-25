@@ -89,14 +89,22 @@ docker compose run --rm web alembic upgrade head    # миграции осно�
 
 Для ручной проверки распознавания и сквозного сценария генератор создаёт PNG и PDF с
 вымышленными данными (шрифт DejaVu Sans установлен в образе). ФИО должно совпадать с ФИО
-Владельца, даты по умолчанию — сегодня (в часовом поясе `DISPLAY_TZ`):
+Владельца, даты по умолчанию — сегодня (в часовом поясе `DISPLAY_TZ`). Файлы создаются внутри
+запущенного контейнера `web` и копируются в домашний каталог:
 
 ```bash
-mkdir -p /tmp/legacy-fixtures
-docker compose run --rm --user "$(id -u):$(id -g)" -v /tmp/legacy-fixtures:/out web \
-  python scripts/gen_fixtures.py --out /out --last Смирнова --first Анна --middle Сергеевна
-# /tmp/legacy-fixtures/certificate.png и certificate.pdf
+# стек должен быть запущен: docker compose up -d
+docker compose exec web python scripts/gen_fixtures.py --out /tmp/fixtures \
+    --last Смирнова --first Анна --middle Сергеевна \
+  && docker compose cp web:/tmp/fixtures/certificate.png ~/certificate.png \
+  && docker compose cp web:/tmp/fixtures/certificate.pdf ~/certificate.pdf
 ```
+
+Каталог хоста в контейнер не монтируется, поэтому команды не зависят от прав на него и от
+того, как Docker сопоставляет пользователей (Docker Desktop, rootless Docker, SELinux).
+
+Создавайте свидетельство в день проверки: если Владелец входил позже даты в документе, проверка
+отклонит его с причиной «Сведения документа противоречат данным системы».
 
 Параметры: `--death-date`, `--issue-date` (ГГГГ-ММ-ДД), `--series`, `--number`. Файлы не
 добавляйте в репозиторий.
@@ -108,7 +116,7 @@ docker compose run --rm --user "$(id -u):$(id -g)" -v /tmp/legacy-fixtures:/out 
 2. **Основной сценарий:** зарегистрируйтесь (ФИО как у свидетельства) → подтвердите email по
    письму в Mailpit → создайте текстовую и файловую записи → создайте наследника, отметьте
    часть записей и сохраните ключ → в другом браузере (или окне инкогнито) откройте
-   «Я наследник», введите ключ, загрузите `certificate.png` → в течение 1–2 минут в Mailpit
+   «Я наследник», введите ключ, загрузите `~/certificate.png` → в течение 1–2 минут в Mailpit
    приходит письмо E2, ещё через минуту — напоминание E3 → через две минуты после E2 статус
    становится «Доступ выдан» → наследник видит и скачивает только назначенные записи.
 3. **Сценарий отмены:** повторите с новым наследником и отмените запрос по ссылке из письма E2 →
