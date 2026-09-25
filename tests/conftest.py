@@ -46,6 +46,8 @@ from app import clock  # noqa: E402
 from app.config import get_settings  # noqa: E402
 from app.db import get_engine, new_session  # noqa: E402
 from app.email.backends import MemoryBackend, get_backend  # noqa: E402
+from app.ocr.fake import FakeOcrProvider  # noqa: E402
+from app.ocr.provider import get_provider  # noqa: E402
 from app.security import limiter  # noqa: E402
 
 
@@ -86,6 +88,7 @@ def _isolated_state(tmp_path, monkeypatch):
     _truncate_all_tables()
     clock.set_now(datetime.now(timezone.utc).replace(microsecond=0))
     get_backend().reset()
+    get_provider().reset()
     limiter.reset()
     yield
     clock.reset()
@@ -101,6 +104,13 @@ def mail() -> MemoryBackend:
     backend = get_backend()
     assert isinstance(backend, MemoryBackend)
     return backend
+
+
+@pytest.fixture
+def ocr() -> FakeOcrProvider:
+    provider = get_provider()
+    assert isinstance(provider, FakeOcrProvider)
+    return provider
 
 
 @pytest.fixture

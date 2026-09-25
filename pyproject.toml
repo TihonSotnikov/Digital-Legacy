@@ -49,6 +49,7 @@ markers = [
 filterwarnings = [
     "ignore::DeprecationWarning:easyocr.*",
     "ignore::DeprecationWarning:torch.*",
+    "ignore::UserWarning:torch.*",
     # TestClient (4.4) работает поверх httpx; предупреждения Starlette о переходе на httpx2.
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",
     "ignore:The anyio.abc.BlockingPortal alias is deprecated",

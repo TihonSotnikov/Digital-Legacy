@@ -43,6 +43,7 @@ RUN useradd --create-home --uid 10001 app \
 WORKDIR /app
 COPY alembic.ini pyproject.toml ./
 COPY migrations ./migrations
+COPY scripts ./scripts
 COPY tests ./tests
 COPY app ./app
 
