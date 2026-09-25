@@ -1,0 +1,55 @@
+[project]
+name = "digital-legacy"
+version = "0.1.0"
+description = "Сервис цифрового наследия — MVP"
+requires-python = "==3.12.*"
+# Версии зафиксированы. torch и torchvision (CPU-сборка) ставятся в Dockerfile
+# из индекса https://download.pytorch.org/whl/cpu отдельным кешируемым слоем.
+dependencies = [
+    "fastapi==0.141.1",
+    "starlette==1.6.0",
+    "uvicorn==0.52.4",
+    "jinja2==3.1.6",
+    "sqlalchemy==2.0.54",
+    "psycopg[binary]==3.3.6",
+    "alembic==1.19.2",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "argon2-cffi==25.1.0",
+    "cryptography==50.0.1",
+    "itsdangerous==2.2.0",
+    "slowapi==0.1.10",
+    "limits==5.8.0",
+    "python-multipart==0.0.32",
+    "email-validator==2.3.0",
+    "rapidfuzz==3.14.6",
+    "pillow==12.3.0",
+    "pymupdf==1.28.2",
+]
+
+[project.optional-dependencies]
+# Стек OCR (кроме torch/torchvision) — отдельный слой образа, см. Dockerfile.
+ocr = [
+    "easyocr==1.7.2",
+    "opencv-python-headless==4.14.0.94",
+    "numpy==2.5.3",
+]
+test = [
+    "pytest==9.1.1",
+    "httpx==0.28.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-p no:cacheprovider"
+markers = [
+    "ocr: тесты с реальным EasyOCR (модели в /models)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:easyocr.*",
+    "ignore::DeprecationWarning:torch.*",
+    # TestClient (4.4) работает поверх httpx; предупреждения Starlette о переходе на httpx2.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated",
+]

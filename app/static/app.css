@@ -1,0 +1,174 @@
+/* Дополнения к Pico.css. Inline-стили не используются (CSP: default-src 'self'). */
+
+.site-header nav,
+.site-header nav ul {
+  flex-wrap: wrap;
+}
+
+.site-header nav ul li {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.brand {
+  text-decoration: none;
+}
+
+.muted {
+  color: var(--pico-muted-color);
+}
+
+.owner-email {
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+
+.inline-form {
+  display: inline;
+  margin: 0;
+}
+
+.small-button,
+.inline-form button {
+  width: auto;
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9em;
+}
+
+.site-footer {
+  margin-top: 2rem;
+  color: var(--pico-muted-color);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.actions form {
+  margin: 0;
+}
+
+.actions button,
+.actions [role="button"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Сообщения и баннеры */
+.flash,
+.banner,
+.alert {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
+  border-radius: var(--pico-border-radius);
+}
+
+.banner p {
+  margin-bottom: 0.5rem;
+}
+
+.flash-success {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #1b5e20;
+}
+
+.flash-info {
+  background: #e3f2fd;
+  border-color: #1565c0;
+  color: #0d47a1;
+}
+
+.flash-error,
+.alert-error,
+.banner-danger {
+  background: #fdecea;
+  border-color: #c62828;
+  color: #8e1c1c;
+}
+
+.banner-warning {
+  background: #fff8e1;
+  border-color: #f9a825;
+  color: #5d4300;
+}
+
+.field-error {
+  display: block;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  color: #c62828;
+}
+
+.hint {
+  display: block;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  color: var(--pico-muted-color);
+  font-size: 0.875em;
+}
+
+/* Карточки записей и наследников */
+.cards article {
+  margin-bottom: 1rem;
+}
+
+.cards article header,
+.cards article footer {
+  margin-top: 0;
+}
+
+.card-meta {
+  color: var(--pico-muted-color);
+  font-size: 0.9em;
+}
+
+.counters {
+  color: var(--pico-muted-color);
+}
+
+/* Ключ наследника и содержимое записей */
+.key-display {
+  display: block;
+  padding: 1rem;
+  font-family: var(--pico-font-family-monospace);
+  font-size: 1.2rem;
+  word-spacing: 0.4em;
+  overflow-wrap: anywhere;
+}
+
+.key-input {
+  font-family: var(--pico-font-family-monospace);
+}
+
+pre.record-content {
+  padding: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* CSP блокирует data:-иконки Pico: возвращаем нативный вид чекбоксов и списков. */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+  background-image: none;
+  width: 1.1em;
+  height: 1.1em;
+}
+
+select {
+  -webkit-appearance: auto;
+  appearance: auto;
+  background-image: none;
+}

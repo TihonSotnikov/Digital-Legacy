@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Цифровое наследие{% endblock %}</title>
+  <link rel="stylesheet" href="/static/pico.min.css">
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="container site-header">
+    <nav>
+      <ul>
+        <li><a class="brand" href="{% if owner %}/vault{% elif heir_ctx %}/heir/portal{% else %}/{% endif %}"><strong>Цифровое наследие</strong></a></li>
+      </ul>
+      {% if owner %}
+      <ul>
+        <li><a href="/vault">Мой сейф</a></li>
+        <li><a href="/heirs">Наследники</a></li>
+        <li><a href="/requests">Запросы</a></li>
+        <li><a href="/account">Аккаунт</a></li>
+        <li class="muted owner-email">{{ owner.email }}</li>
+        <li>
+          <form method="post" action="/logout" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="secondary outline small-button">Выйти</button>
+          </form>
+        </li>
+      </ul>
+      {% elif heir_ctx %}
+      <ul>
+        <li class="muted">Вы вошли как наследник {{ heir_ctx.heir_name }}</li>
+        <li>
+          <form method="post" action="/heir/logout" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="secondary outline small-button">Выйти</button>
+          </form>
+        </li>
+      </ul>
+      {% else %}
+      <ul>
+        <li><a href="/login">Войти</a></li>
+        <li><a href="/register">Регистрация</a></li>
+        <li><a href="/heir">Я наследник</a></li>
+      </ul>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% for banner in banners %}
+    {% if banner.kind == "unverified" %}
+    <div class="banner banner-warning" role="status">
+      <p>Подтвердите email — без этого нельзя добавить наследника и получить уведомление о запросе.</p>
+      <form method="post" action="/verify-email/resend" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="next" value="{{ request.url.path }}">
+        <button type="submit" class="small-button" data-loading="Отправка...">Отправить письмо ещё раз</button>
+      </form>
+    </div>
+    {% elif banner.kind == "active_request" %}
+    <div class="banner banner-danger" role="alert">
+      <p>Поступил наследственный запрос от наследника {{ banner.heir_name }}. Если вы его не ожидали — отмените.</p>
+      <a href="/requests" role="button" class="small-button">Перейти к запросам</a>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {% for f in flashes %}
+    <div class="flash flash-{{ f.level }}" role="{{ 'alert' if f.level == 'error' else 'status' }}"{% if f.code %} data-error-code="{{ f.code }}"{% endif %}>{{ f.text }}</div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="container site-footer">
+    <small>
+      <a href="/terms">Условия использования</a> · <a href="/privacy">Политика обработки персональных данных</a><br>
+      Проверка документов автоматическая и не является юридическим подтверждением
+    </small>
+  </footer>
+</body>
+</html>

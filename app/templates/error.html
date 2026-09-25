@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — Цифровое наследие{% endblock %}
+{% block content %}
+<article class="error-page">
+  <div class="alert alert-error" role="alert" data-error-code="{{ code }}">{{ message }}</div>
+  <h1>{{ status }} · {{ title }}</h1>
+  <a href="{{ home_url }}" role="button">На главную</a>
+</article>
+{% endblock %}
