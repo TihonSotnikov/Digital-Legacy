@@ -13,6 +13,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from app.config import configure_logging, load_settings_or_exit
 from app.routes import (
     SECURITY_HEADERS,
+    account,
     auth,
     cancel,
     health,
@@ -68,7 +69,7 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-    for module in (public, auth, vault, heirs, requests, cancel, heir, health):
+    for module in (public, auth, vault, heirs, requests, account, cancel, heir, health):
         app.include_router(module.router)
     return app
 

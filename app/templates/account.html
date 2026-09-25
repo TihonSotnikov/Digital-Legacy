@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, alert as alert_block %}
+{% block title %}Аккаунт — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Аккаунт</h1>
+
+<section>
+  <label for="account-email">Email</label>
+  <input id="account-email" value="{{ account.email }}" readonly>
+</section>
+
+<section>
+  <h2>Удаление аккаунта</h2>
+  <div class="banner banner-danger" role="note">
+    <p>Все записи, файлы и наследники будут удалены без возможности восстановления. Ключи наследников перестанут работать</p>
+  </div>
+  {{ alert_block(alert) }}
+  <form method="post" action="/account/delete" data-confirm="Удалить аккаунт без возможности восстановления?">
+    {{ csrf(csrf_token) }}
+    <label for="delete-password">Пароль</label>
+    <input type="password" id="delete-password" name="password" autocomplete="current-password" required{% if alert %} aria-invalid="true"{% endif %}>
+    <button type="submit" class="secondary" data-loading="Сохранение...">Удалить аккаунт</button>
+  </form>
+</section>
+{% endblock %}

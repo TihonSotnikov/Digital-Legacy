@@ -5,17 +5,17 @@
 <h1>Запросы</h1>
 {% if items %}
 <div class="table-scroll">
-  <table>
+  <table class="stacked">
     <thead>
       <tr><th>Наследник</th><th>Дата подачи</th><th>Статус</th><th>Окончание ожидания</th><th></th></tr>
     </thead>
     <tbody>
       {% for item in items %}
       <tr>
-        <td>{{ item.heir_name }}</td>
-        <td>{{ item.request.created_at|datetime }}</td>
-        <td>{{ owner_status_label(item.request) }}</td>
-        <td>{{ item.request.waiting_until|datetime }}</td>
+        <td data-label="Наследник">{{ item.heir_name }}</td>
+        <td data-label="Дата подачи">{{ item.request.created_at|datetime }}</td>
+        <td data-label="Статус">{{ owner_status_label(item.request) }}</td>
+        <td{% if item.request.waiting_until %} data-label="Окончание ожидания"{% endif %}>{{ item.request.waiting_until|datetime }}</td>
         <td>
           {% if item.active %}
           <form method="post" action="/requests/{{ item.request.id }}/cancel" class="inline-form" data-confirm="Отменить запрос? Ключ наследника будет отозван">

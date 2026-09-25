@@ -157,12 +157,27 @@ pre.record-content {
   overflow-x: auto;
 }
 
-/* CSP блокирует data:-иконки Pico: возвращаем нативный вид чекбоксов и списков. */
+/*
+ * CSP (default-src 'self') блокирует встроенные data:-иконки Pico. Переменные иконок
+ * отключаются, чтобы браузер их не запрашивал, а чекбоксы и списки получают нативный вид.
+ */
+:root[data-theme] {
+  --pico-icon-checkbox: none;
+  --pico-icon-minus: none;
+  --pico-icon-chevron: none;
+  --pico-icon-date: none;
+  --pico-icon-time: none;
+  --pico-icon-search: none;
+  --pico-icon-close: none;
+  --pico-icon-loading: none;
+  --pico-icon-valid: none;
+  --pico-icon-invalid: none;
+}
+
 input[type="checkbox"],
 input[type="radio"] {
   -webkit-appearance: auto;
   appearance: auto;
-  background-image: none;
   width: 1.1em;
   height: 1.1em;
 }
@@ -170,5 +185,32 @@ input[type="radio"] {
 select {
   -webkit-appearance: auto;
   appearance: auto;
-  background-image: none;
+}
+
+/* Таблица запросов на узких экранах: строки становятся карточками с подписями полей. */
+@media (max-width: 576px) {
+  table.stacked thead {
+    display: none;
+  }
+
+  table.stacked tr {
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+  }
+
+  table.stacked td {
+    display: block;
+    padding: 0.2rem 0;
+    border: none;
+  }
+
+  table.stacked td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+  }
+
+  table.stacked td:empty {
+    display: none;
+  }
 }
