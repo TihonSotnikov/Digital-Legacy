@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app import clock, security
 from app.config import current_request_id
 from app.db import get_db
+from app.email.backends import send_best_effort
 from app.models import ACTIVE_STATUSES, Heir, InheritanceRequest, User
 from app.routes import AppError, parse_id, redirect, render, require_owner, verify_csrf
 from app.transitions import CANCELLABLE, TransitionConflict, transition
@@ -31,7 +32,9 @@ def cancel_request(db: Session, request_id: uuid.UUID) -> InheritanceRequest:
             raise AppError("INVALID_TRANSITION") from None
         db.commit()
         logger.info("Запрос отменён Владельцем")
-        return db.get(InheritanceRequest, request_id)
+        cancelled = db.get(InheritanceRequest, request_id)
+        send_best_effort("E9", cancelled.heir_contact_email)  # P1: одна попытка, ошибка в лог
+        return cancelled
     finally:
         current_request_id.reset(token)
 

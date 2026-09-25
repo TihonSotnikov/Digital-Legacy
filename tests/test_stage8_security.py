@@ -59,6 +59,7 @@ POST_CASES = {
     "/heirs/{heir_id}/regenerate-key": "owner",
     "/heirs/{heir_id}/delete": "owner",
     "/requests/{request_id}/cancel": "owner",
+    "/account/profile": "owner",
     "/account/delete": "owner",
     "/cancel/{token}": "anonymous",
     "/heir/login": "anonymous",

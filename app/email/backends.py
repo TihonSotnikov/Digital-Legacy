@@ -112,6 +112,8 @@ _env = Environment(
     loader=FileSystemLoader(Path(__file__).resolve().parent / "templates"),
     autoescape=False,
     keep_trailing_newline=True,
+    trim_blocks=True,
+    lstrip_blocks=True,
     undefined=StrictUndefined,
 )
 

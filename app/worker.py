@@ -22,12 +22,12 @@ from app import audit, clock, storage, tokens
 from app.config import configure_logging, current_request_id, get_settings, load_settings_or_exit
 from app.crypto import DecryptionError
 from app.db import new_session
-from app.email.backends import EmailSendError, send_email
+from app.email.backends import EmailSendError, send_best_effort, send_email
 from app.models import Heir, InheritanceRequest, SystemState, User
 from app.ocr.prepare import DocumentUnreadable, prepare_image
 from app.ocr.provider import get_provider
 from app.routes import format_datetime
-from app.rules import OwnerNames, check
+from app.rules import PHOTO_ADVICE, REASON_MESSAGES, OwnerNames, check
 from app.transitions import TransitionConflict, transition
 
 logger = logging.getLogger("app.worker")
@@ -70,6 +70,36 @@ def _owner_email_context(item: InheritanceRequest, heir: Heir, waiting_until) ->
         "cancel_url": tokens.cancel_url(item.id),
         "requests_url": f"{settings.base_url}/requests",
     }
+
+
+def _urls() -> dict[str, str]:
+    base = get_settings().base_url
+    return {"heirs_url": f"{base}/heirs", "heir_url": f"{base}/heir"}
+
+
+def send_rejection_notices(request_id: uuid.UUID) -> None:
+    """E4 Владельцу и E6 Наследнику после фиксации отклонения (P1, одна попытка)."""
+    loaded = _load(request_id)
+    if loaded is None:
+        return
+    item, heir, owner = loaded
+    urls = _urls()
+    send_best_effort(
+        "E4",
+        owner.email,
+        heir_name=heir.name,
+        created_at=format_datetime(item.created_at),
+        rejected_at=format_datetime(item.rejected_at),
+        heirs_url=urls["heirs_url"],
+    )
+    codes = (item.check_result or {}).get("reasons") or []
+    send_best_effort(
+        "E6",
+        item.heir_contact_email,
+        reasons=[REASON_MESSAGES.get(code, code) for code in codes],
+        advice=PHOTO_ADVICE,
+        heir_url=urls["heir_url"],
+    )
 
 
 # --- Heartbeat ---------------------------------------------------------------------------
@@ -158,6 +188,7 @@ def reject(request_id: uuid.UUID, check_result: dict[str, Any]) -> bool:
             return False
         db.commit()
     logger.info("Документ отклонён: %s", ", ".join(check_result["reasons"]))
+    send_rejection_notices(request_id)
     return True
 
 
@@ -183,6 +214,8 @@ def register_ocr_failure(request_id: uuid.UUID, exc: Exception) -> None:
             check_result = {"accepted": False, "reasons": ["OCR_UNAVAILABLE"], "attempts": attempts}
             transition(db, request_id, {"PENDING_REVIEW"}, "REJECTED", check_result=check_result, rejected_at=now)
         db.commit()
+    if rejected:
+        send_rejection_notices(request_id)
 
 
 # --- Шаг B: уведомление Владельца ------------------------------------------------------------
@@ -230,6 +263,9 @@ def notify_owner(request_id: uuid.UUID) -> None:
         audit.log(db, owner.id, "OWNER_NOTIFIED", {}, request_id=request_id)
         db.commit()
     logger.info("Владелец уведомлён, начат период ожидания")
+    send_best_effort(
+        "E7", item.heir_contact_email, waiting_until=format_datetime(now + period), heir_url=_urls()["heir_url"]
+    )
 
 
 # --- Шаг C: напоминание ------------------------------------------------------------------------
@@ -339,6 +375,14 @@ def release(request_id: uuid.UUID) -> None:
             return
         db.commit()
     logger.info("Доступ выдан")
+    loaded = _load(request_id)
+    if loaded is not None:
+        item, heir, owner = loaded
+        urls = _urls()
+        send_best_effort(
+            "E5", owner.email, heir_name=heir.name, released_at=format_datetime(item.released_at), heirs_url=urls["heirs_url"]
+        )
+        send_best_effort("E8", item.heir_contact_email, heir_url=urls["heir_url"])
 
 
 # --- Шаг E: очистка документов --------------------------------------------------------------------

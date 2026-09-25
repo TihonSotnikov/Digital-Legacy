@@ -170,19 +170,35 @@ docker compose run --rm --user "$(id -u):$(id -g)" -v /tmp/legacy-fixtures:/out 
 Требования: ежедневно (RPO — 24 часа), во внешнее хранилище, хранение 14 дней. Копия базы
 содержит персональные данные в открытом виде (email, ФИО) — храните её с ограниченным доступом.
 
-Ручное резервное копирование (из каталога проекта; в эксплуатации добавьте к командам
-`docker compose` параметры `-f docker-compose.yml -f docker-compose.prod.yml`):
+Скрипт `scripts/backup.sh` делает копию базы (`pg_dump`) и архив тома `files`, удаляет копии
+старше 14 дней и, если задан `BACKUP_REMOTE`, зеркалирует каталог копий во внешнее хранилище
+через `rsync`:
 
 ```bash
-mkdir -p backups
-STAMP=$(date +%Y%m%d-%H%M%S)
-docker compose exec -T db pg_dump -U app -d app -Fc > "backups/db-$STAMP.dump"
-docker compose run --rm --no-deps --user root -v "$PWD/backups:/backup" worker \
-  tar czf "/backup/files-$STAMP.tar.gz" -C /data files
+scripts/backup.sh                                    # эксплуатация (docker-compose.prod.yml)
+COMPOSE_FILE=docker-compose.yml scripts/backup.sh    # разработка
 ```
 
+| Переменная | По умолчанию | Назначение |
+|---|---|---|
+| `BACKUP_DIR` | `./backups` | каталог копий на сервере |
+| `BACKUP_KEEP_DAYS` | `14` | срок хранения, дней |
+| `BACKUP_REMOTE` | — | назначение `rsync` во внешнем хранилище, например `backup@host:/srv/legacy` |
+| `COMPOSE_FILE` | `docker-compose.yml:docker-compose.prod.yml` | файлы Compose |
+
+Ежедневный запуск (cron на сервере, от пользователя с доступом к Docker):
+
+```cron
+15 3 * * * BACKUP_REMOTE=backup@host:/srv/legacy /opt/digital-legacy/scripts/backup.sh >> /var/log/digital-legacy-backup.log 2>&1
+```
+
+Получаются файлы `backups/db-<STAMP>.dump` и `backups/files-<STAMP>.tar.gz` (права `600`).
+Хранение во внешнем хранилище — те же 14 дней: `rsync --delete` повторяет содержимое каталога
+копий.
+
 Восстановление (на чистой машине — после шагов 1–2 раздела «Запуск» или «Эксплуатация» с
-**теми же** `MASTER_KEY` и `SECRET_KEY`):
+**теми же** `MASTER_KEY` и `SECRET_KEY`; в эксплуатации добавьте к командам `docker compose`
+параметры `-f docker-compose.yml -f docker-compose.prod.yml`):
 
 ```bash
 docker compose up -d db
@@ -202,7 +218,7 @@ app/            приложение: main.py, config.py, models.py, worker.py, 
 app/ocr/        подготовка изображения, EasyOCR и fake-провайдеры
 app/email/      отправка писем и шаблоны E1–E9
 migrations/     миграции Alembic (эталонная схема 2.3)
-scripts/        gen_fixtures.py — синтетические свидетельства
+scripts/        gen_fixtures.py — синтетические свидетельства, backup.sh — резервное копирование
 tests/          приёмочные (test_atNN_*) и модульные тесты
 docker/         db-init.sql — база app_test
 ```

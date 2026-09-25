@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import csrf, alert as alert_block %}
+{% from "_macros.html" import csrf, invalid, field_error, alert as alert_block %}
 {% block title %}Аккаунт — Цифровое наследие{% endblock %}
 {% block content %}
 <h1>Аккаунт</h1>
@@ -7,6 +7,32 @@
 <section>
   <label for="account-email">Email</label>
   <input id="account-email" value="{{ account.email }}" readonly>
+</section>
+
+<section>
+  <h2>ФИО</h2>
+  <p class="hint">Укажите ФИО точно как в паспорте: по нему проверяется свидетельство о смерти</p>
+  {% if profile_locked %}
+  <div class="banner banner-warning" role="note">
+    <p>ФИО нельзя изменить, пока есть активный запрос</p>
+  </div>
+  {% endif %}
+  <form method="post" action="/account/profile">
+    {{ csrf(csrf_token) }}
+    <fieldset{% if profile_locked %} disabled{% endif %}>
+      <label for="last_name">Фамилия</label>
+      <input id="last_name" name="last_name" value="{{ profile.last_name }}" maxlength="100" required{{ invalid(errors, 'last_name') }}>
+      {{ field_error(errors, 'last_name') }}
+      <label for="first_name">Имя</label>
+      <input id="first_name" name="first_name" value="{{ profile.first_name }}" maxlength="100" required{{ invalid(errors, 'first_name') }}>
+      {{ field_error(errors, 'first_name') }}
+      <label for="middle_name">Отчество</label>
+      <input id="middle_name" name="middle_name" value="{{ profile.middle_name }}" maxlength="100"{{ invalid(errors, 'middle_name') }}>
+      <small class="hint">если есть</small>
+      {{ field_error(errors, 'middle_name') }}
+      <button type="submit" data-loading="Сохранение...">Сохранить</button>
+    </fieldset>
+  </form>
 </section>
 
 <section>
