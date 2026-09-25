@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, invalid, field_error %}
+{% block title %}Наследник — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>{{ "Новый наследник" if mode == "new" else "Изменение наследника" }}</h1>
+<form method="post" action="{% if mode == 'new' %}/heirs{% else %}/heirs/{{ heir.id }}/edit{% endif %}">
+  {{ csrf(csrf_token) }}
+
+  <label for="name">Имя</label>
+  <input id="name" name="name" value="{{ values.name or '' }}" maxlength="100" required{{ invalid(errors, 'name') }}>
+  {{ field_error(errors, 'name') }}
+
+  <fieldset>
+    <legend>Записи, доступные наследнику</legend>
+    {% if records %}
+    {% for record in records %}
+    <label>
+      <input type="checkbox" name="record_ids" value="{{ record.id }}"{% if record.id|string in (values.record_ids or []) %} checked{% endif %}>
+      {{ record.title }} <span class="card-meta">({{ "текст" if record.type == "text" else "файл" }})</span>
+    </label>
+    {% endfor %}
+    {% else %}
+    <p class="hint">Наследник пока не получит никаких данных — назначьте записи позже</p>
+    {% endif %}
+  </fieldset>
+
+  <button type="submit" data-loading="Сохранение...">{{ "Создать и получить ключ" if mode == "new" else "Сохранить" }}</button>
+</form>
+{% endblock %}

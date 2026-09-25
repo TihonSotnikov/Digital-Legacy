@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, invalid, field_error %}
+{% block title %}Регистрация — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Регистрация</h1>
+<form method="post" action="/register">
+  {{ csrf(csrf_token) }}
+
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" value="{{ values.email or '' }}" autocomplete="email" required{{ invalid(errors, 'email') }}>
+  {{ field_error(errors, 'email') }}
+
+  <label for="password">Пароль</label>
+  <input type="password" id="password" name="password" autocomplete="new-password" minlength="10" required{{ invalid(errors, 'password') }}>
+  <small class="hint">не менее 10 символов</small>
+  {{ field_error(errors, 'password') }}
+
+  <label for="password_confirm">Повтор пароля</label>
+  <input type="password" id="password_confirm" name="password_confirm" autocomplete="new-password" required{{ invalid(errors, 'password_confirm') }}>
+  {{ field_error(errors, 'password_confirm') }}
+
+  <p class="banner banner-warning">Укажите ФИО точно как в паспорте: по нему проверяется свидетельство о смерти</p>
+
+  <label for="last_name">Фамилия</label>
+  <input id="last_name" name="last_name" value="{{ values.last_name or '' }}" maxlength="100" autocomplete="family-name" required{{ invalid(errors, 'last_name') }}>
+  {{ field_error(errors, 'last_name') }}
+
+  <label for="first_name">Имя</label>
+  <input id="first_name" name="first_name" value="{{ values.first_name or '' }}" maxlength="100" autocomplete="given-name" required{{ invalid(errors, 'first_name') }}>
+  {{ field_error(errors, 'first_name') }}
+
+  <label for="middle_name">Отчество</label>
+  <input id="middle_name" name="middle_name" value="{{ values.middle_name or '' }}" maxlength="100" autocomplete="additional-name"{{ invalid(errors, 'middle_name') }}>
+  <small class="hint">если есть</small>
+  {{ field_error(errors, 'middle_name') }}
+
+  <label for="consent">
+    <input type="checkbox" id="consent" name="consent" value="on"{% if values.consent %} checked{% endif %}{{ invalid(errors, 'consent') }}>
+    Я принимаю <a href="/terms">условия использования</a> и даю согласие на <a href="/privacy">обработку персональных данных</a>
+  </label>
+  {{ field_error(errors, 'consent') }}
+
+  <button type="submit" data-loading="Сохранение...">Зарегистрироваться</button>
+</form>
+<p>Уже зарегистрированы? <a href="/login">Войти</a></p>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, alert as alert_block %}
+{% block title %}Вход — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Вход</h1>
+{{ alert_block(alert) }}
+<form method="post" action="/login">
+  {{ csrf(csrf_token) }}
+  <input type="hidden" name="next" value="{{ values.next or '' }}">
+
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email" value="{{ values.email or '' }}" autocomplete="email" required>
+
+  <label for="password">Пароль</label>
+  <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+  <button type="submit" data-loading="Проверка...">Войти</button>
+</form>
+<p><a href="/register">Регистрация</a></p>
+{% endblock %}

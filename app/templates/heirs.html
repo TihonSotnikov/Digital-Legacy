@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Наследники — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Наследники</h1>
+<div class="actions">
+  <a href="/heirs/new" role="button">+ Добавить наследника</a>
+</div>
+
+{% if heirs %}
+<div class="cards">
+  {% for heir in heirs %}
+  {% set key = active_keys.get(heir.id) %}
+  {% set last = last_requests.get(heir.id) %}
+  <article>
+    <header><strong>{{ heir.name }}</strong></header>
+    <p class="card-meta">Назначено записей: {{ record_counts.get(heir.id, 0) }}</p>
+    <p class="card-meta">
+      {% if key %}Ключ выдан: {{ key.created_at|datetime }}{% else %}Ключ отозван — выпустите новый{% endif %}
+    </p>
+    {% if last %}<p class="card-meta">Последний запрос: {{ owner_status_label(last) }}</p>{% endif %}
+    <div class="actions">
+      <a href="/heirs/{{ heir.id }}/edit" role="button" class="outline small-button">Изменить</a>
+      <form method="post" action="/heirs/{{ heir.id }}/regenerate-key" data-confirm="Перевыпустить ключ наследника {{ heir.name }}? Старый ключ перестанет работать">
+        {{ csrf(csrf_token) }}
+        <button type="submit" class="outline small-button">Перевыпустить ключ</button>
+      </form>
+      <form method="post" action="/heirs/{{ heir.id }}/delete" data-confirm="Удалить наследника {{ heir.name }}? Его ключ перестанет работать">
+        {{ csrf(csrf_token) }}
+        <button type="submit" class="outline secondary small-button">Удалить</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<article class="empty-state">
+  <p>Вы ещё не добавили наследников. Создайте наследника, чтобы назначить ему часть данных.</p>
+  <a href="/heirs/new" role="button">Добавить наследника</a>
+</article>
+{% endif %}
+
+<p class="counters">Наследников: {{ heirs|length }} из {{ max_heirs }}</p>
+{% endblock %}

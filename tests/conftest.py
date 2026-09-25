@@ -45,6 +45,8 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from app import clock  # noqa: E402
 from app.config import get_settings  # noqa: E402
 from app.db import get_engine, new_session  # noqa: E402
+from app.email.backends import MemoryBackend, get_backend  # noqa: E402
+from app.security import limiter  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -83,6 +85,8 @@ def _isolated_state(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "FILES_DIR", str(files_dir))
     _truncate_all_tables()
     clock.set_now(datetime.now(timezone.utc).replace(microsecond=0))
+    get_backend().reset()
+    limiter.reset()
     yield
     clock.reset()
 
@@ -90,6 +94,13 @@ def _isolated_state(tmp_path, monkeypatch):
 @pytest.fixture
 def settings():
     return get_settings()
+
+
+@pytest.fixture
+def mail() -> MemoryBackend:
+    backend = get_backend()
+    assert isinstance(backend, MemoryBackend)
+    return backend
 
 
 @pytest.fixture

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Ключ наследника — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Ключ для наследника {{ heir.name }}</h1>
+{% if key %}
+<code class="key-display" id="heir-key">{{ key }}</code>
+<div class="actions">
+  <button type="button" class="outline" data-copy-target="#heir-key" data-copy-strip>Скопировать</button>
+</div>
+<div class="banner banner-warning" role="note">
+  <p>Сохраните ключ и передайте наследнику. Система показывает его только один раз. Если вы потеряете ключ, выпустите новый; после вашей смерти восстановить ключ будет невозможно</p>
+</div>
+<a href="/heirs" role="button">Я сохранил ключ</a>
+{% else %}
+<p>Ключ уже был показан. Если вы его не сохранили, перевыпустите ключ</p>
+<a href="/heirs" role="button">К списку наследников</a>
+{% endif %}
+{% endblock %}

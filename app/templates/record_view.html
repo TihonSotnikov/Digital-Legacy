@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ record.title }} — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>{{ record.title }}</h1>
+<p class="card-meta">Изменено: {{ record.updated_at|datetime }}</p>
+
+{% if record.type == "text" %}
+<pre class="record-content" id="record-content">
+{{ content }}</pre>
+<div class="actions">
+  <button type="button" class="outline small-button" data-copy-target="#record-content">Скопировать</button>
+</div>
+{% else %}
+<p>Файл: {{ record.file_name }} · {{ record.size_bytes|size }}</p>
+<div class="actions">
+  <a href="/records/{{ record.id }}/download" role="button">Скачать</a>
+</div>
+{% endif %}
+
+<div class="actions">
+  <a href="/records/{{ record.id }}/edit" role="button" class="outline">Изменить</a>
+  <form method="post" action="/records/{{ record.id }}/delete" data-confirm="Удалить запись «{{ record.title }}»?{% if heir_count %} Она назначена наследникам: {{ heir_count }}.{% endif %}">
+    {{ csrf(csrf_token) }}
+    <button type="submit" class="outline secondary">Удалить</button>
+  </form>
+</div>
+{% endblock %}

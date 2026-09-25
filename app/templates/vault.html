@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Мой сейф — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Мой сейф</h1>
+<div class="actions">
+  <a href="/records/new?type=text" role="button">+ Текстовая запись</a>
+  <a href="/records/new?type=file" role="button" class="secondary">+ Файл</a>
+</div>
+
+{% if records %}
+<div class="cards">
+  {% for record in records %}
+  {% set heirs_affected = heir_counts.get(record.id, 0) %}
+  <article>
+    <header>
+      <strong>{{ record.title }}</strong>
+      <span class="card-meta">· {{ "Текст" if record.type == "text" else "Файл" }}</span>
+    </header>
+    <p class="card-meta">
+      Изменено: {{ record.updated_at|datetime }}{% if record.type == "file" %} · {{ record.size_bytes|size }}{% endif %}
+    </p>
+    <div class="actions">
+      <a href="/records/{{ record.id }}" role="button" class="outline small-button">Открыть</a>
+      <a href="/records/{{ record.id }}/edit" role="button" class="outline small-button">Изменить</a>
+      <form method="post" action="/records/{{ record.id }}/delete" data-confirm="Удалить запись «{{ record.title }}»?{% if heirs_affected %} Она назначена наследникам: {{ heirs_affected }}.{% endif %}">
+        {{ csrf(csrf_token) }}
+        <button type="submit" class="outline secondary small-button">Удалить</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<article class="empty-state">
+  <p>Ваш сейф пуст. Добавьте первую запись, чтобы начать формирование цифрового наследия.</p>
+  <a href="/records/new?type=text" role="button">Добавить первую запись</a>
+</article>
+{% endif %}
+
+<p class="counters">
+  Записей: {{ usage.records }} из {{ settings.MAX_RECORDS }} · Файлы: {{ usage.storage_bytes|mb }} из {{ settings.MAX_STORAGE_MB }} МБ · Наследников: {{ usage.heirs }} из {{ settings.MAX_HEIRS }}
+</p>
+{% endblock %}

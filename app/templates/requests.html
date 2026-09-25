@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Запросы — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Запросы</h1>
+{% if items %}
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>Наследник</th><th>Дата подачи</th><th>Статус</th><th>Окончание ожидания</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.heir_name }}</td>
+        <td>{{ item.request.created_at|datetime }}</td>
+        <td>{{ owner_status_label(item.request) }}</td>
+        <td>{{ item.request.waiting_until|datetime }}</td>
+        <td>
+          {% if item.active %}
+          <form method="post" action="/requests/{{ item.request.id }}/cancel" class="inline-form" data-confirm="Отменить запрос? Ключ наследника будет отозван">
+            {{ csrf(csrf_token) }}
+            <button type="submit" class="small-button" data-loading="Отправка...">Отменить</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>Запросов нет</p>
+{% endif %}
+{% endblock %}

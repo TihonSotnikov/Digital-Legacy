@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Отмена запроса — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Наследственный запрос</h1>
+<p>Наследственный запрос от наследника {{ heir.name }}, подан {{ item.created_at|datetime }}. Статус: {{ owner_status_label(item) }}.</p>
+{% if active %}
+<p>Если вы не ожидали этот запрос, отмените его. Отмена отзовёт ключ наследника.</p>
+<form method="post" action="/cancel/{{ token }}" data-confirm="Отменить запрос? Ключ наследника будет отозван">
+  {{ csrf(csrf_token) }}
+  <button type="submit" data-loading="Отправка...">Отменить запрос</button>
+</form>
+{% endif %}
+{% endblock %}

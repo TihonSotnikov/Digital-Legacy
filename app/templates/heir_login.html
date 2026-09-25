@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, alert as alert_block %}
+{% block title %}Портал наследника — Цифровое наследие{% endblock %}
+{% block content %}
+<h1>Портал наследника</h1>
+<p>Если у вас есть ключ доступа от близкого человека, введите его здесь, чтобы начать получение данных.</p>
+{{ alert_block(alert) }}
+<form method="post" action="/heir/login" data-key-form>
+  {{ csrf(csrf_token) }}
+  <label for="key">Ключ</label>
+  <input id="key" name="key" class="key-input" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+  <small class="field-error" data-key-error hidden>Ключ должен состоять из 64 символов 0–9 и a–f</small>
+  <button type="submit" data-loading="Проверка...">Продолжить</button>
+</form>
+{% endblock %}
