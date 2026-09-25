@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, invalid, field_error %}
+{% block title %}Портал наследника — Цифровое наследие{% endblock %}
+
+{% macro upload_form(button_text) %}
+<form method="post" action="/heir/request" enctype="multipart/form-data">
+  {{ csrf(csrf_token) }}
+  <label for="document">Свидетельство о смерти</label>
+  <input type="file" id="document" name="document" accept=".jpg,.jpeg,.png,.pdf" data-file-name="#document-name" required{{ invalid(errors, 'document') }}>
+  <small class="hint">JPG, PNG, PDF до {{ settings.MAX_DOC_MB }} МБ. У PDF проверяется только первая страница</small>
+  <small class="hint" id="document-name"></small>
+  {{ field_error(errors, 'document') }}
+
+  <label for="contact_email">Email для уведомлений (необязательно)</label>
+  <input type="email" id="contact_email" name="contact_email" value="{{ values.contact_email or '' }}" autocomplete="email"{{ invalid(errors, 'contact_email') }}>
+  {{ field_error(errors, 'contact_email') }}
+
+  <p class="hint">{{ advice }}</p>
+  <button type="submit" data-loading="Отправка...">{{ button_text }}</button>
+</form>
+{% endmacro %}
+
+{% macro limit_message() %}
+<div class="alert alert-error" role="alert" data-error-code="REQUEST_LIMIT_EXCEEDED">Превышено число попыток за сутки. Повторите позже</div>
+{% endmacro %}
+
+{% block content %}
+<h1>Портал наследника</h1>
+
+{% if state == "released" %}
+<div class="flash flash-success" role="status">Доступ открыт</div>
+{% if items %}
+<div class="cards">
+  {% for item in items %}
+  <article>
+    <header><strong>{{ item.record.title }}</strong></header>
+    {% if item.record.type == "text" %}
+    <pre class="record-content" id="record-content-{{ loop.index }}">
+{{ item.content }}</pre>
+    <button type="button" class="outline small-button" data-copy-target="#record-content-{{ loop.index }}">Скопировать</button>
+    {% else %}
+    <p>{{ item.record.file_name }} · {{ item.record.size_bytes|size }}</p>
+    <a href="/heir/files/{{ item.record.id }}" role="button" class="small-button">Скачать</a>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p>Владелец не назначил вам ни одной записи.</p>
+{% endif %}
+
+{% elif state == "waiting" %}
+<p>Документ принят. Владелец данных уведомлён. Если запрос не будет отменён, доступ откроется не ранее {{ latest.waiting_until|datetime }}</p>
+<a href="/heir/portal" role="button">Обновить статус</a>
+
+{% elif state == "pending" %}
+<p>Документ на проверке. Обычно это занимает до 2 минут</p>
+<a href="/heir/portal" role="button">Обновить статус</a>
+
+{% elif state == "rejected" %}
+<div class="alert alert-error" role="alert">
+  <p>Документ не прошёл проверку:</p>
+  <ul>
+    {% for reason in reasons %}
+    <li data-error-code="{{ reason.code }}">{{ reason.message }}</li>
+    {% endfor %}
+  </ul>
+</div>
+<p class="hint">{{ advice }}</p>
+{% if limit_reached %}{{ limit_message() }}{% else %}{{ upload_form("Загрузить другой документ") }}{% endif %}
+
+{% else %}
+<p>Загрузите свидетельство о смерти владельца данных</p>
+{% if limit_reached %}{{ limit_message() }}{% else %}{{ upload_form("Отправить на проверку") }}{% endif %}
+{% endif %}
+{% endblock %}
