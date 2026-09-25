@@ -254,3 +254,62 @@ def session_data(client) -> dict:
         return {}
     payload = TimestampSigner(get_settings().SECRET_KEY).unsign(raw.encode())
     return json.loads(base64.b64decode(payload))
+
+
+# --- Сценарии Worker -------------------------------------------------------------------------
+
+
+def png_document(size=(64, 48)) -> bytes:
+    import io
+
+    from PIL import Image
+
+    buffer = io.BytesIO()
+    Image.new("RGB", size, (255, 255, 255)).save(buffer, "PNG")
+    return buffer.getvalue()
+
+
+def submit_document(client, data: bytes | None = None, filename: str = "certificate.png", mime: str = "image/png", contact: str = ""):
+    return client.post(
+        "/heir/request",
+        data={"csrf_token": page_csrf(client, "/heir/portal"), "contact_email": contact},
+        files={"document": (filename, png_document() if data is None else data, mime)},
+    )
+
+
+def display_today():
+    from app.config import get_settings
+
+    return clock.now().astimezone(get_settings().display_tz).date()
+
+
+def certificate_text(last: str = "Смирнова", first: str = "Анна", middle: str | None = "Сергеевна", day=None) -> str:
+    """Текст корректного свидетельства; даты — сегодня по app.clock (не раньше последнего входа)."""
+    day = day or display_today()
+    return "\n".join(
+        [
+            "РОССИЙСКАЯ ФЕДЕРАЦИЯ",
+            "СВИДЕТЕЛЬСТВО О СМЕРТИ",
+            last,
+            " ".join(part for part in (first, middle) if part),
+            f"умер(ла) {day:%d.%m.%Y}",
+            "Место государственной регистрации: Отдел ЗАГС Центрального района",
+            f"Дата выдачи {day:%d.%m.%Y}",
+            "I-ЕТ № 123456",
+        ]
+    )
+
+
+def emails(mail, email_id: str, to: str | None = None) -> list:
+    return [m for m in mail.outbox if m.email_id == email_id and (to is None or m.to == to)]
+
+
+def cancel_path(message) -> str:
+    match = re.search(r"https?://[^/\s]+(/cancel/\S+)", message.body)
+    assert match, "в письме нет ссылки отмены"
+    return match.group(1)
+
+
+def only_request(db):
+    db.expire_all()
+    return db.execute(select(InheritanceRequest)).scalar_one()

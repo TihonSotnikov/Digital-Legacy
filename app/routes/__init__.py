@@ -251,6 +251,14 @@ def owner_banners(user_id: uuid.UUID, verified: bool) -> list[dict[str, Any]]:
     return banners
 
 
+@dataclass(frozen=True)
+class OwnerView:
+    """Данные Владельца для шаблонов, не зависящие от состояния сессии БД (ошибки после rollback)."""
+
+    id: uuid.UUID
+    email: str
+
+
 def require_owner(request: Request, db: Session = Depends(get_db)) -> User:
     """Проверка сессии Владельца (3.2.4): пользователь с uid существует."""
     user_id = security.session_uuid(request, "uid")
@@ -259,9 +267,9 @@ def require_owner(request: Request, db: Session = Depends(get_db)) -> User:
         if "uid" in request.session:
             request.session.pop("uid")
         raise OwnerLoginRequired()
-    request.state.owner = user
-    verified = user.email_verified_at is not None
-    request.state.banners_factory = lambda: owner_banners(user.id, verified)
+    owner_id, verified = user.id, user.email_verified_at is not None
+    request.state.owner = OwnerView(id=owner_id, email=user.email)
+    request.state.banners_factory = lambda: owner_banners(owner_id, verified)
     return user
 
 
@@ -269,10 +277,7 @@ def require_owner(request: Request, db: Session = Depends(get_db)) -> User:
 class HeirContext:
     heir: Heir
     key: HeirKey
-
-    @property
-    def heir_name(self) -> str:
-        return self.heir.name
+    heir_name: str
 
 
 def require_heir(request: Request, db: Session = Depends(get_db)) -> HeirContext:
@@ -288,7 +293,8 @@ def require_heir(request: Request, db: Session = Depends(get_db)) -> HeirContext
     if auth_at is None or not auth_at + ttl > clock.now() or key is None or key.revoked_at is not None:
         security.clear_heir_session(request)
         raise HeirLoginRequired(expired=True)
-    context = HeirContext(heir=db.get(Heir, key.heir_id), key=key)
+    heir = db.get(Heir, key.heir_id)
+    context = HeirContext(heir=heir, key=key, heir_name=heir.name)
     request.state.heir = context
     return context
 
