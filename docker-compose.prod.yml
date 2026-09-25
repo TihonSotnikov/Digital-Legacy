@@ -1,0 +1,55 @@
+# Эксплуатация (3.4.3): поверх docker-compose.yml, без mailpit, с caddy, restart: unless-stopped.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  db:
+    restart: unless-stopped
+
+  migrate:
+    restart: "no"  # однократный запуск alembic upgrade head
+
+  web:
+    restart: unless-stopped
+    # X-Forwarded-For принимается только от Caddy (фиксированный адрес в сети проекта).
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --proxy-headers
+      - --forwarded-allow-ips=172.30.0.10
+
+  worker:
+    restart: unless-stopped
+
+  mailpit:
+    profiles: ["dev"]  # в эксплуатации не запускается
+
+  caddy:
+    image: caddy:2.11.4
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      BASE_URL: ${BASE_URL:?задайте BASE_URL в .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      default:
+        ipv4_address: 172.30.0.10
+    depends_on:
+      - web
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  caddy_data:
+  caddy_config:

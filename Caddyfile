@@ -1,0 +1,12 @@
+# Обратный прокси и TLS в эксплуатации (2.1.4, 3.4.3).
+# Адрес сайта — BASE_URL из .env (например, https://legacy.example.ru): Caddy автоматически
+# выпускает и продлевает сертификат для этого домена.
+# Access-лог Caddy отключён (директива log не задана), поэтому токены из ссылок
+# /cancel/… и /verify-email/… в логи прокси не попадают.
+{$BASE_URL} {
+	request_body {
+		max_size 12MB
+	}
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	reverse_proxy web:8000
+}
