@@ -13,7 +13,7 @@
 #   COMPOSE_FILE      файлы Compose (по умолчанию docker-compose.yml:docker-compose.prod.yml;
 #                     для разработки — docker-compose.yml)
 #
-# .env и MASTER_KEY в копию не входят: храните их отдельно (README, «Ключи»).
+# .env и MASTER_KEY в копию не входят: храните их отдельно (README, «Установка»).
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
