@@ -1,6 +1,6 @@
 [project]
 name = "digital-legacy"
-version = "0.1.0"
+version = "1.0.1"
 description = "Сервис цифрового наследия — MVP"
 requires-python = "==3.12.*"
 # Версии зафиксированы. torch и torchvision (CPU-сборка) ставятся в Dockerfile
