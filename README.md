@@ -3,13 +3,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12-a8c8f0?style=flat&logo=python&logoColor=white" alt="Python 3.12">
-  <img src="https://img.shields.io/badge/FastAPI-0.141-b8e0d2?style=flat&logo=fastapi&logoColor=white" alt="FastAPI 0.141">
-  <img src="https://img.shields.io/badge/SQLAlchemy-2.0-b8e0d2?style=flat&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy 2.0">
-  <img src="https://img.shields.io/badge/PostgreSQL-16-b8e0d2?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL 16">
-  <img src="https://img.shields.io/badge/EasyOCR-1.7-b8e0d2?style=flat" alt="EasyOCR 1.7">
-  <img src="https://img.shields.io/badge/Docker-Compose-f5d5b8?style=flat&logo=docker&logoColor=white" alt="Docker Compose">
-  <img src="https://img.shields.io/badge/License-MIT-d4c8f0?style=flat" alt="License MIT">
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=flat&logo=python&logoColor=white" alt="Python 3.12">
+  <img src="https://img.shields.io/badge/FastAPI-0.141-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI 0.141">
+  <img src="https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?style=flat&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy 2.0">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL 16">
+  <img src="https://img.shields.io/badge/EasyOCR-1.7-4B8BBE?style=flat" alt="EasyOCR 1.7">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat" alt="License MIT">
 </p>
 
 <p align="center">
